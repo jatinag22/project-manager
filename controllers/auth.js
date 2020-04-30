@@ -27,8 +27,8 @@ exports.signup = async (req, res, next) => {
 
 exports.logout = async (req, res, next) => {
     try {
-        req.user.tokens = req.user.token.filter((token) => {return token.token != req.token})
-        await user.save()
+        req.user.tokens = req.user.tokens.filter((token) => {return token.token != req.token})
+        await req.user.save()
         res.send()
     } catch (e) {
         next(e)
@@ -38,7 +38,7 @@ exports.logout = async (req, res, next) => {
 exports.logoutAll = async(req, res, next) => {
     try {
         req.user.tokens = []
-        await user.save()
+        await req.user.save()
         res.send()
     } catch (e) {
         next(e)
