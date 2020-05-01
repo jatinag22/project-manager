@@ -18,6 +18,7 @@ app.use((req, res, next) => {
 
 app.use(errorUtil)
 
-app.listen(3000, () => {
-    console.log('Server started')
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+    console.log('Server started on port ' + PORT)
 })

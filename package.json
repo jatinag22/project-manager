@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "nodemon"
+    "dev": "nodemon -r dotenv/config app.js dotenv_config_path=./config/.env"
   },
   "author": "Jatin",
   "license": "ISC",
@@ -19,6 +19,7 @@
     "validator": "^13.0.0"
   },
   "devDependencies": {
+    "dotenv": "^8.2.0",
     "nodemon": "^2.0.3"
   }
 }
