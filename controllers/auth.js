@@ -1,6 +1,9 @@
 const User = require('../models/user')
 
 exports.login = async (req, res, next) => {
+    if(req.user) {
+        return res.send({user, token})
+    }
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
@@ -12,6 +15,9 @@ exports.login = async (req, res, next) => {
 }
 
 exports.signup = async (req, res, next) => {
+    if(req.user) {
+        return res.send({user, token})
+    }
     const user = new User(req.body)
     try {
         await user.save()

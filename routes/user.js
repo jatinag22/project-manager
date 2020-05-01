@@ -4,7 +4,7 @@ const userController = require('../controllers/user')
 const router = new express.Router()
 
 router.get('/', (req, res, next) => {
-    res.redirect('./users/' + req.user._id)
+    res.send(req.user)
 })
 
 router.get('/:id', userController.findUser)
