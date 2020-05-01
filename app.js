@@ -1,4 +1,4 @@
-require('./db/mongoose')
+require('./config/mongoose')
 const express = require('express')
 const morgan = require('morgan')
 const indexRouter = require('./routes/index')
