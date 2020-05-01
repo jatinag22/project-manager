@@ -15,6 +15,9 @@ const auth = async (req, res, next) => {
     } catch(e) {
         e.message = 'Unauthorized'
         e.status = 401
+        if(e.name === 'TokenExpiredError') {
+            e.message = 'Please login again!'
+        }
         next(e)
     }
 }
