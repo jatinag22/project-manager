@@ -1,9 +1,35 @@
 const Task = require('../models/task')
 
 exports.findTasks = async (req, res, next) => {
+    var match = {}
+    var sort = {}
+
+    if(req.query.completed) {
+        if(req.query.completed === 'true') match.completed = true
+        if(req.query.completed === 'false') match.completed = false
+    }
+
+    if(req.query.sort) {
+        let parts = req.query.sort.split(':')
+        if(parts[1] === 'asc') sort[parts[0]] = 1
+        if(parts[1] === 'desc') sort[parts[0]] = -1
+    }
+
+    const limit = 10
+    const skip = parseInt(req.query.page) * limit
+    const options = {
+        limit,
+        skip,
+        sort
+    }
+
     try {
-        const tasks = await Task.find({owner: req.user._id})
-        res.send(tasks)
+        await req.user.populate({
+            path: 'tasks',
+            match,
+            options
+        }).execPopulate()
+        res.send(req.user.tasks)
     } catch (e) {
         next(e)
     }

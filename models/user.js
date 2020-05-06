@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     },
     username: {
         type: String,
-        required: true,
+        //required: true,
         trim: true,
         minlength: 3,
         unique: true
@@ -42,6 +42,12 @@ const userSchema = new mongoose.Schema({
     }]
 }, {
     timestamps: true
+})
+
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 userSchema.methods.toJSON = function() {
