@@ -39,9 +39,6 @@ exports.getAvatar = async (req, res, next) => {
             e.status = 404
             throw e
         }
-        // if(!user.avatar) {
-        //     user.avatar = null
-        // }
         res.set('Content-Type', 'image/png')
         res.send(user.avatar)
     } catch (e) {
