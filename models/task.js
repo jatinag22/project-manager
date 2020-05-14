@@ -30,6 +30,16 @@ const subtaskScema = new mongoose.Schema({
 
 const taskSchema = new mongoose.Schema({
     ...taskFields,
+    progress: {
+        current: {
+            type: Number,
+            default: 0
+        },
+        total: {
+            type: Number,
+            default: 1
+        }
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -41,13 +51,48 @@ const taskSchema = new mongoose.Schema({
 })
 
 taskSchema.pre('save', function(next) {
+    if(this.subtasks.length == 0) {
+        this.progress.total = 1
+    } else {
+        this.progress.total = this.subtasks.length
+    }
+
+    if(this.progress.current == this.progress.total) {
+        this.completed = true
+    }
+
     if(this.isModified('completed')) {
         if(this.completed) {
             this.completedAt = Date.now()
+            this.progress.current = this.progress.total
         } else {
             this.completedAt = undefined
         }
     }
+
+    next()
+})
+
+subtaskScema.pre('save', function(next) {
+    if(this.isModified('completed')) {
+        const parent = parent()
+        if(this.completed) {
+            this.completedAt = Date.now()
+            parent.progress.current++
+        } else {
+            this.completedAt = undefined
+            parent.progress.current--
+        }
+    }
+    next()
+})
+
+subtaskScema.pre('remove', function(next) {
+    const parent = parent()
+    if(this.completed) {
+        parent.progress.current--
+    }
+    parent.progress.total--
     next()
 })
 
