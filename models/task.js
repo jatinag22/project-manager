@@ -1,32 +1,5 @@
 const mongoose = require('mongoose')
-
-const taskFields = {
-    title: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    description: {
-        type: String,
-        trim: true
-    },
-    due: {
-        type: Date
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    completedAt: {
-        type: Date
-    }
-}
-
-const subtaskScema = new mongoose.Schema({
-    ...taskFields
-}, {
-    timestamps: true
-})
+const { taskFields } = require('../utils/taskFieldsUtil')
 
 const taskSchema = new mongoose.Schema({
     ...taskFields,
@@ -45,7 +18,10 @@ const taskSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    subtasks: [subtaskScema]
+    subtasks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subtask'
+    }]
 }, {
     timestamps: true
 })
@@ -57,7 +33,7 @@ taskSchema.pre('save', function(next) {
         this.progress.total = this.subtasks.length
     }
 
-    if(this.progress.current == this.progress.total) {
+    if(!this.isModified('completed') && this.progress.current == this.progress.total) {
         this.completed = true
     }
 
@@ -66,33 +42,13 @@ taskSchema.pre('save', function(next) {
             this.completedAt = Date.now()
             this.progress.current = this.progress.total
         } else {
+            if(this.subtasks.length == 0) {
+                this.progress.current = 0
+            }
             this.completedAt = undefined
         }
     }
 
-    next()
-})
-
-subtaskScema.pre('save', function(next) {
-    if(this.isModified('completed')) {
-        const parent = parent()
-        if(this.completed) {
-            this.completedAt = Date.now()
-            parent.progress.current++
-        } else {
-            this.completedAt = undefined
-            parent.progress.current--
-        }
-    }
-    next()
-})
-
-subtaskScema.pre('remove', function(next) {
-    const parent = parent()
-    if(this.completed) {
-        parent.progress.current--
-    }
-    parent.progress.total--
     next()
 })
 
