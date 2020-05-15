@@ -10,6 +10,6 @@ router.post('/', taskController.createTask)
 router.patch('/:id', taskController.updateTask)
 router.delete('/:id', taskController.deleteTask)
 
-router.use(subtaskRouter)
+router.use('/:id/subtasks', subtaskRouter)
 
 module.exports = router

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Task = require('./task')
 const { taskFields } = require('../utils/taskFieldsUtil')
 
 const subtaskScema = new mongoose.Schema({
@@ -12,26 +13,28 @@ const subtaskScema = new mongoose.Schema({
     timestamps: true
 })
 
-subtaskScema.pre('save', function(next) {
+subtaskScema.pre('save', async function(next) {
     if(this.isModified('completed')) {
-        const parent = parent()
+        const task = await Task.findById(this.task)
         if(this.completed) {
             this.completedAt = Date.now()
-            parent.progress.current++
+            task.progress.current++
         } else {
             this.completedAt = undefined
-            parent.progress.current--
+            task.progress.current--
         }
+        await task.save()
     }
     next()
 })
 
-subtaskScema.pre('remove', function(next) {
-    const parent = parent()
+subtaskScema.pre('remove', async function(next) {
+    const task = await Task.findById(this.task)
     if(this.completed) {
-        parent.progress.current--
+        task.progress.current--
     }
-    parent.progress.total--
+    task.progress.total--
+    await task.save()
     next()
 })
 

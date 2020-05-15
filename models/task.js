@@ -33,9 +33,14 @@ taskSchema.pre('save', function(next) {
         this.progress.total = this.subtasks.length
     }
 
-    if(!this.isModified('completed') && this.progress.current == this.progress.total) {
-        this.completed = true
-    }
+    if(!this.isModified('completed')) {
+        if(this.progress.current == this.progress.total) {
+            this.completed = true
+        } else {
+            this.completed = false
+        }
+    } 
+        
 
     if(this.isModified('completed')) {
         if(this.completed) {
