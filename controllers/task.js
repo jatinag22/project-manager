@@ -62,7 +62,7 @@ exports.createTask = async (req, res, next) => {
 }
 
 exports.updateTask = async (req, res, next) => {
-    const allowedUpdates = new Set(['title', 'description', 'due', 'completed'])
+    const allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'owner'])
     try {
         const task = await Task.findOne({_id: req.params.id, owner: req.user._id})
         if(!task) {

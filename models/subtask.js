@@ -19,6 +19,7 @@ const subtaskScema = new mongoose.Schema({
 
 subtaskScema.pre('save', async function(next) {
     if(this.isModified('completed')) {
+        const Task = require('./task')
         const task = await Task.findById(this.task)
         if(this.completed) {
             this.completedAt = Date.now()

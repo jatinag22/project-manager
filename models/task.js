@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Subtask = require('./subtask')
 const { taskFields } = require('../utils/taskFieldsUtil')
 
 const taskSchema = new mongoose.Schema({
@@ -34,36 +35,47 @@ const taskSchema = new mongoose.Schema({
     timestamps: true
 })
 
-taskSchema.pre('save', function(next) {
-    if(this.subtasks.length == 0) {
+taskSchema.pre('save', async function(next) {
+
+    if(this.subtasks.length === 0) {
         this.progress.total = 1
     } else {
         this.progress.total = this.subtasks.length
     }
 
+    let flag = true
     if(!this.isModified('completed')) {
-        if(this.progress.current == this.progress.total) {
-            this.completed = true
+        if(this.progress.current === this.progress.total) {
+            if(!this.completed) {
+                this.completed = true
+                this.completedAt = Date.now()
+                flag = false
+            }
         } else {
-            this.completed = false
+            if(this.completed) {
+                this.completed = false
+                this.completedAt = undefined
+                flag = false
+            }
+         
         }
-    } 
-        
+    }
 
-    if(this.isModified('completed')) {
+    if(this.isModified('completed') && flag) {
         if(this.completed) {
             this.completedAt = Date.now()
             this.progress.current = this.progress.total
+            await Subtask.updateMany(
+                {task: this._id, completed: false},
+                {completed: true, completedAt: Date.now()}
+            )
         } else {
-            if(this.subtasks.length == 0) {
-                this.progress.current = 0
-            }
             this.progress.current = 0
             this.completedAt = undefined
-            this.subtasks.forEach((subtask) => {
-                subtask.completed = false
-                subtask.completedAt = undefined
-            })
+            await Subtask.updateMany(
+                {task: this._id, completed: true},
+                {completed: false, completedAt: undefined}
+            )
         }
     }
 
