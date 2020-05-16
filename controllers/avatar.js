@@ -2,7 +2,7 @@ const multer = require('multer')
 const sharp = require('sharp')
 const User = require('../models/user')
 
-exports. upload = multer({
+exports.upload = multer({
     limits: {
         fileSize: 1000000
     },

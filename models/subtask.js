@@ -8,6 +8,10 @@ const subtaskScema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task',
         required: true
+    },
+    assignee: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
     timestamps: true

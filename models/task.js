@@ -6,11 +6,13 @@ const taskSchema = new mongoose.Schema({
     progress: {
         current: {
             type: Number,
-            default: 0
+            default: 0,
+            required: true
         },
         total: {
             type: Number,
-            default: 1
+            default: 1,
+            required: true
         }
     },
     owner: {
@@ -21,6 +23,12 @@ const taskSchema = new mongoose.Schema({
     subtasks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subtask'
+    }],
+    members: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        unique: true
     }]
 }, {
     timestamps: true
@@ -50,7 +58,12 @@ taskSchema.pre('save', function(next) {
             if(this.subtasks.length == 0) {
                 this.progress.current = 0
             }
+            this.progress.current = 0
             this.completedAt = undefined
+            this.subtasks.forEach((subtask) => {
+                subtask.completed = false
+                subtask.completedAt = undefined
+            })
         }
     }
 

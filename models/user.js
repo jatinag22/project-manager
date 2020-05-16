@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 7
+        minlength: 5
     },
     tokens: [{
         token: {
@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
 userSchema.virtual('tasks', {
     ref: 'Task',
     localField: '_id',
-    foreignField: 'owner'
+    foreignField: 'members'
 })
 
 userSchema.methods.toJSON = function() {
@@ -58,6 +58,9 @@ userSchema.methods.toJSON = function() {
     delete userObject.password
     delete userObject.tokens
     delete userObject.avatar
+    delete userObject.createdAt
+    delete userObject.updatedAt
+    delete userObject.__v
     return userObject
 }
 
