@@ -85,6 +85,15 @@ taskSchema.pre('save', async function(next) {
     }
 })
 
+taskSchema.pre('remove', async function() {
+    try {
+        await Subtask.deleteMany({task: this._id})
+        next()
+    } catch (e) {
+        next(e)
+    }
+})
+
 const Task = mongoose.model('Task', taskSchema)
 
 module.exports = Task
