@@ -4,7 +4,6 @@ const memberController = require('../controllers/member')
 const router = express.Router({mergeParams: true})
 
 router.get('/', memberController.viewMembers)
-router.post('/', memberController.addMembers)
-router.put('/', memberController.removeMembers)
+router.patch('/', memberController.updateMembers)
 
 module.exports = router
