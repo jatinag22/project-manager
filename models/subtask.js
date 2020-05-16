@@ -18,29 +18,37 @@ const subtaskScema = new mongoose.Schema({
 })
 
 subtaskScema.pre('save', async function(next) {
-    if(this.isModified('completed')) {
-        const Task = require('./task')
-        const task = await Task.findById(this.task)
-        if(this.completed) {
-            this.completedAt = Date.now()
-            task.progress.current++
-        } else {
-            this.completedAt = undefined
-            task.progress.current--
+    try {
+        if(this.isModified('completed')) {
+            const Task = require('./task')
+            const task = await Task.findById(this.task)
+            if(this.completed) {
+                this.completedAt = Date.now()
+                task.progress.current++
+            } else {
+                this.completedAt = undefined
+                task.progress.current--
+            }
+            await task.save()
         }
-        await task.save()
+        next()
+    } catch (e) {
+        next(e)
     }
-    next()
 })
 
 subtaskScema.pre('remove', async function(next) {
-    const task = await Task.findById(this.task)
-    if(this.completed) {
-        task.progress.current--
+    try {
+        const task = await Task.findById(this.task)
+        if(this.completed) {
+            task.progress.current--
+        }
+        task.progress.total--
+        await task.save()
+        next()
+    } catch (e) {
+        next(e)
     }
-    task.progress.total--
-    await task.save()
-    next()
 })
 
 const Subtask = mongoose.model('Subtask', subtaskScema)
