@@ -39,7 +39,7 @@ exports.createSubtask = async (req, res, next) => {
 }
 
 exports.updateSubtask = async (req, res, next) => {
-    let allowedUpdates = new Set(['title', 'description', 'due', 'completed'])
+    let allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'assignee'])
     const task = await Task.findOne({_id: req.params.id, members: req.user.id})
     if(!task) {
         return next({status: 404, message: 'Task not found!'})
@@ -51,7 +51,7 @@ exports.updateSubtask = async (req, res, next) => {
     if(task.owner != req.user.id) {
         allowedUpdates.clear()
     }
-    if(task.assignee == req.user.id) {
+    if(subtask.assignee == req.user.id) {
         allowedUpdates.add('completed')
     }
     const updates = Object.keys(req.body).filter(key => allowedUpdates.has(key))
