@@ -18,4 +18,4 @@ app.use((req, res, next) => {
 
 app.use(errorUtil)
 
-modules.export = app
+module.exports = app
