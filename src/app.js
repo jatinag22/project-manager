@@ -1,4 +1,4 @@
-require('./config/mongoose')
+require('./mongoose')
 const express = require('express')
 const morgan = require('morgan')
 const indexRouter = require('./routes/index')
@@ -18,7 +18,4 @@ app.use((req, res, next) => {
 
 app.use(errorUtil)
 
-const PORT = process.env.PORT
-app.listen(PORT, () => {
-    console.log('Server started on port ' + PORT)
-})
+modules.export = app

@@ -2,11 +2,11 @@
   "name": "task-manager-new",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon -r dotenv/config app.js dotenv_config_path=./config/.env"
+    "start": "node src/index.js",
+    "dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./config/dev.env"
   },
   "author": "Jatin",
   "license": "ISC",
