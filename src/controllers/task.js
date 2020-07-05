@@ -1,35 +1,15 @@
 const Project = require('../models/project')
+const Task = require('../models/task')
 
 exports.findTasks = async (req, res, next) => {
-    var match = {}
-    var sort = {}
-
-    if(req.query.completed) {
-        if(req.query.completed === 'true') match.completed = true
-        if(req.query.completed === 'false') match.completed = false
-    }
-
-    if(req.query.sort) {
-        let parts = req.query.sort.split(':')
-        if(parts[1] === 'asc') sort[parts[0]] = 1
-        if(parts[1] === 'desc') sort[parts[0]] = -1
-    }
-
-    const limit = 10
-    const skip = parseInt(req.query.page) * limit
-    const options = {
-        limit,
-        skip,
-        sort
-    }
-
     try {
-        await req.user.populate({
-            path: 'projects',
-            match,
-            options
-        }).execPopulate()
-        res.send(req.user.projects)
+        const project = await Project.findOne({_id: req.params.id, members: req.user._id})
+                        .populate('tasks')
+                        .exec()
+        if(!project) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        res.send(project.tasks)
     } catch (e) {
         next(e)
     }
@@ -37,11 +17,15 @@ exports.findTasks = async (req, res, next) => {
 
 exports.findTaskById = async (req, res, next) => {
     try {
-        const project = await Project.findOne({_id: req.params.id, members: req.user._id})
+        const project = await Project.findOne({_id: req.params.id, members: req.user.id})
         if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        res.send(project)
+        const task = await Task.findOne({project, _id:req.params.sid})
+        if(!task) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        res.send(task)
     } catch (e) {
         next(e)
     }
@@ -49,29 +33,44 @@ exports.findTaskById = async (req, res, next) => {
 
 exports.createTask = async (req, res, next) => {
     try {
-        const project = new Project({
+        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
+        if(!project) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        const task = new Task({
             ...req.body,
-            owner: req.user._id
+            project: req.params.id
         })
-        project.members.unshift(req.user._id)
+        await task.save()
+        project.tasks.push(task._id)
         await project.save()
-        res.status(201).send(project)
+        res.status(201).send(task)
     } catch (e) {
         next(e)
     }
 }
 
 exports.updateTask = async (req, res, next) => {
-    const allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'owner'])
     try {
-        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
+        let allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'assignee'])
+        const project = await Project.findOne({_id: req.params.id, members: req.user.id})
         if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
+        const task = await Task.findOne({_id: req.params.sid, project})
+        if(!task) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        if(project.owner != req.user.id) {
+            allowedUpdates.clear()
+        }
+        if(task.assignee == req.user.id) {
+            allowedUpdates.add('completed')
+        }
         const updates = Object.keys(req.body).filter(key => allowedUpdates.has(key))
-        updates.forEach((key) => project[key] = req.body[key])
-        await project.save()
-        res.send(project)
+        updates.forEach((key) => task[key] = req.body[key])
+        await task.save()
+        res.send(task)
     } catch (e) {
         next(e)
     }
@@ -79,11 +78,15 @@ exports.updateTask = async (req, res, next) => {
 
 exports.deleteTask = async (req, res, next) => {
     try {
-        const project = await Project.findOneAndDelete({_id: req.params.id, owner: req.user._id})
+        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
         if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        res.send(project)
+        const task = await Project.findOneAndDelete({_id: req.params.sid, project})
+        if(!task) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        res.send(task)
     } catch (e) {
         next(e)
     }
