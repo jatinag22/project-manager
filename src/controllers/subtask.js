@@ -1,15 +1,15 @@
+const Project = require('../models/project')
 const Task = require('../models/task')
-const Subtask = require('../models/subtask')
 
 exports.findSubtasks = async (req, res, next) => {
     try {
-        const task = await Task.findOne({_id: req.params.id, members: req.user._id})
-                        .populate('subtasks')
+        const project = await Project.findOne({_id: req.params.id, members: req.user._id})
+                        .populate('tasks')
                         .exec()
-        if(!task) {
+        if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        res.send(task.subtasks)
+        res.send(project.tasks)
     } catch (e) {
         next(e)
     }
@@ -17,15 +17,15 @@ exports.findSubtasks = async (req, res, next) => {
 
 exports.findSubtaskById = async (req, res, next) => {
     try {
-        const task = await Task.findOne({_id: req.params.id, members: req.user.id})
+        const project = await Project.findOne({_id: req.params.id, members: req.user.id})
+        if(!project) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        const task = await Task.findOne({project, _id:req.params.sid})
         if(!task) {
             return next({status: 404, message: 'Task not found!'})
         }
-        const subtask = await Subtask.findOne({task, _id:req.params.sid})
-        if(!subtask) {
-            return next({status: 404, message: 'Task not found!'})
-        }
-        res.send(subtask)
+        res.send(task)
     } catch (e) {
         next(e)
     }
@@ -33,18 +33,18 @@ exports.findSubtaskById = async (req, res, next) => {
 
 exports.createSubtask = async (req, res, next) => {
     try {
-        const task = await Task.findOne({_id: req.params.id, owner: req.user._id})
-        if(!task) {
+        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
+        if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        const subtask = new Subtask({
+        const task = new Task({
             ...req.body,
-            task: req.params.id
+            project: req.params.id
         })
-        await subtask.save()
-        task.subtasks.push(subtask._id)
         await task.save()
-        res.status(201).send(subtask)
+        project.tasks.push(task._id)
+        await project.save()
+        res.status(201).send(task)
     } catch (e) {
         next(e)
     }
@@ -53,24 +53,24 @@ exports.createSubtask = async (req, res, next) => {
 exports.updateSubtask = async (req, res, next) => {
     try {
         let allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'assignee'])
-        const task = await Task.findOne({_id: req.params.id, members: req.user.id})
+        const project = await Project.findOne({_id: req.params.id, members: req.user.id})
+        if(!project) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        const task = await Task.findOne({_id: req.params.sid, project})
         if(!task) {
             return next({status: 404, message: 'Task not found!'})
         }
-        const subtask = await Subtask.findOne({_id: req.params.sid, task})
-        if(!subtask) {
-            return next({status: 404, message: 'Task not found!'})
-        }
-        if(task.owner != req.user.id) {
+        if(project.owner != req.user.id) {
             allowedUpdates.clear()
         }
-        if(subtask.assignee == req.user.id) {
+        if(task.assignee == req.user.id) {
             allowedUpdates.add('completed')
         }
         const updates = Object.keys(req.body).filter(key => allowedUpdates.has(key))
-        updates.forEach((key) => subtask[key] = req.body[key])
-        await subtask.save()
-        res.send(subtask)
+        updates.forEach((key) => task[key] = req.body[key])
+        await task.save()
+        res.send(task)
     } catch (e) {
         next(e)
     }
@@ -78,15 +78,15 @@ exports.updateSubtask = async (req, res, next) => {
 
 exports.deleteSubtask = async (req, res, next) => {
     try {
-        const task = await Task.findOne({_id: req.params.id, owner: req.user._id})
+        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
+        if(!project) {
+            return next({status: 404, message: 'Task not found!'})
+        }
+        const task = await Project.findOneAndDelete({_id: req.params.sid, project})
         if(!task) {
             return next({status: 404, message: 'Task not found!'})
         }
-        const subtask = await Task.findOneAndDelete({_id: req.params.sid, task})
-        if(!subtask) {
-            return next({status: 404, message: 'Task not found!'})
-        }
-        res.send(subtask)
+        res.send(task)
     } catch (e) {
         next(e)
     }

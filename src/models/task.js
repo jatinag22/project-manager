@@ -1,99 +1,56 @@
 const mongoose = require('mongoose')
-const Subtask = require('./subtask')
+const Project = require('./project')
 const { taskFields } = require('../utils/taskFieldsUtil')
 
-const taskSchema = new mongoose.Schema({
+const taskScema = new mongoose.Schema({
     ...taskFields,
-    progress: {
-        current: {
-            type: Number,
-            default: 0,
-            required: true
-        },
-        total: {
-            type: Number,
-            default: 1,
-            required: true
-        }
-    },
-    owner: {
+    project: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Project',
         required: true
     },
-    subtasks: [{
+    assignee: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subtask'
-    }],
-    members: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-        unique: true
-    }]
+        ref: 'User'
+    }
 }, {
     timestamps: true
 })
 
-taskSchema.pre('save', async function(next) {
+taskScema.pre('save', async function(next) {
     try {
-        if(this.subtasks.length === 0) {
-            this.progress.total = 1
-        } else {
-            this.progress.total = this.subtasks.length
-        }
-    
-        let flag = true
-        if(!this.isModified('completed')) {
-            if(this.progress.current === this.progress.total) {
-                if(!this.completed) {
-                    this.completed = true
-                    this.completedAt = Date.now()
-                    flag = false
-                }
-            } else {
-                if(this.completed) {
-                    this.completed = false
-                    this.completedAt = undefined
-                    flag = false
-                }
-             
-            }
-        }
-    
-        if(this.isModified('completed') && flag) {
+        if(this.isModified('completed')) {
+            const Project = require('./project')
+            const project = await Project.findById(this.project)
             if(this.completed) {
                 this.completedAt = Date.now()
-                this.progress.current = this.progress.total
-                await Subtask.updateMany(
-                    {task: this._id, completed: false},
-                    {completed: true, completedAt: Date.now()}
-                )
+                project.progress.current++
             } else {
-                this.progress.current = 0
                 this.completedAt = undefined
-                await Subtask.updateMany(
-                    {task: this._id, completed: true},
-                    {completed: false, completedAt: undefined}
-                )
+                project.progress.current--
             }
+            await project.save()
         }
-    
         next()
     } catch (e) {
         next(e)
     }
 })
 
-taskSchema.pre('remove', async function() {
+taskScema.pre('remove', async function(next) {
     try {
-        await Subtask.deleteMany({task: this._id})
+        const project = await Project.findById(this.project)
+        if(this.completed) {
+            project.progress.current--
+        }
+        project.progress.total--
+        await project.save()
         next()
     } catch (e) {
         next(e)
     }
 })
 
-const Task = mongoose.model('Task', taskSchema)
+const Task = mongoose.model('Task', taskScema)
 
 module.exports = Task

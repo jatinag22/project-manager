@@ -1,4 +1,4 @@
-const Task = require('../models/task')
+const Project = require('../models/project')
 
 exports.findTasks = async (req, res, next) => {
     var match = {}
@@ -25,11 +25,11 @@ exports.findTasks = async (req, res, next) => {
 
     try {
         await req.user.populate({
-            path: 'tasks',
+            path: 'projects',
             match,
             options
         }).execPopulate()
-        res.send(req.user.tasks)
+        res.send(req.user.projects)
     } catch (e) {
         next(e)
     }
@@ -37,11 +37,11 @@ exports.findTasks = async (req, res, next) => {
 
 exports.findTaskById = async (req, res, next) => {
     try {
-        const task = await Task.findOne({_id: req.params.id, members: req.user._id})
-        if(!task) {
+        const project = await Project.findOne({_id: req.params.id, members: req.user._id})
+        if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        res.send(task)
+        res.send(project)
     } catch (e) {
         next(e)
     }
@@ -49,13 +49,13 @@ exports.findTaskById = async (req, res, next) => {
 
 exports.createTask = async (req, res, next) => {
     try {
-        const task = new Task({
+        const project = new Project({
             ...req.body,
             owner: req.user._id
         })
-        task.members.unshift(req.user._id)
-        await task.save()
-        res.status(201).send(task)
+        project.members.unshift(req.user._id)
+        await project.save()
+        res.status(201).send(project)
     } catch (e) {
         next(e)
     }
@@ -64,14 +64,14 @@ exports.createTask = async (req, res, next) => {
 exports.updateTask = async (req, res, next) => {
     const allowedUpdates = new Set(['title', 'description', 'due', 'completed', 'owner'])
     try {
-        const task = await Task.findOne({_id: req.params.id, owner: req.user._id})
-        if(!task) {
+        const project = await Project.findOne({_id: req.params.id, owner: req.user._id})
+        if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
         const updates = Object.keys(req.body).filter(key => allowedUpdates.has(key))
-        updates.forEach((key) => task[key] = req.body[key])
-        await task.save()
-        res.send(task)
+        updates.forEach((key) => project[key] = req.body[key])
+        await project.save()
+        res.send(project)
     } catch (e) {
         next(e)
     }
@@ -79,11 +79,11 @@ exports.updateTask = async (req, res, next) => {
 
 exports.deleteTask = async (req, res, next) => {
     try {
-        const task = await Task.findOneAndDelete({_id: req.params.id, owner: req.user._id})
-        if(!task) {
+        const project = await Project.findOneAndDelete({_id: req.params.id, owner: req.user._id})
+        if(!project) {
             return next({status: 404, message: 'Task not found!'})
         }
-        res.send(task)
+        res.send(project)
     } catch (e) {
         next(e)
     }
