@@ -21,7 +21,7 @@ exports.signup = async (req, res, next) => {
     const user = new User(req.body)
     try {
         await user.save()
-        res.status(201).send(user)
+        res.status(201).send({user})
     } catch(e) {
         if(e.code == 11000) {
             e.message = "Username/email already exists!"

@@ -104,7 +104,7 @@ userSchema.pre('save', async function(next) {
     }
 })
 
-userSchema.pre('remove', async function() {
+userSchema.pre('remove', async function(next) {
     try {
         await Project.deleteMany({owner: this._id})
         next()

@@ -4,8 +4,8 @@ const avatarController = require('../controllers/avatar')
 
 const router = express.Router()
 
-router.post('/:id/avatar', auth, avatarController.upload.single('avatar'), avatarController.uploadAvatar)
+router.post('/me/avatar', auth, avatarController.upload.single('avatar'), avatarController.uploadAvatar)
 router.get('/:id/avatar', auth, avatarController.getAvatar)
-router.delete('/:id/avatar', auth, avatarController.deleteAvatar)
+router.delete('/me/avatar', auth, avatarController.deleteAvatar)
 
 module.exports = router

@@ -40,6 +40,7 @@ exports.deleteUser = async (req, res, next) => {
         await req.user.remove()
         res.send(req.user)
     } catch(e) {
+        console.log(e)
         next(e)
     }
 }

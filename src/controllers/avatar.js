@@ -17,11 +17,11 @@ exports.upload = multer({
 
 exports.uploadAvatar = async (req, res, next) => {
     try {
-        if(req.user._id != req.params.id) {
-            let e = new Error('Invalid User ID!')
-            e.status = 400
-            throw e
-        }
+        // if(req.user._id != req.params.id) {
+        //     let e = new Error('Invalid User ID!')
+        //     e.status = 400
+        //     throw e
+        // }
         const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer()
         req.user.avatar = buffer
         await req.user.save()
