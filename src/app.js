@@ -1,7 +1,6 @@
-require('./mongoose')
 const express = require('express')
 const morgan = require('morgan')
-const indexRouter = require('./routes/index')
+const indexRouter = require('./routes')
 const errorUtil = require('./utils/errorUtil')
 
 const app = express()

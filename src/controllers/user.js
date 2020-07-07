@@ -19,9 +19,9 @@ exports.updateUser = async (req, res, next) => {
     const allowedUpdates = new Set(['name', 'password'])
     try {
         const user = req.user
-        if(user._id != req.params.id) {
-            return next({status:403, message:'Invalid User ID!'})
-        }
+        // if(user._id != req.params.id) {
+        //     return next({status:403, message:'Invalid User ID!'})
+        // }
         const updates = Object.keys(req.body).filter(key => allowedUpdates.has(key))
         updates.forEach((key) => user[key] = req.body[key])
         await user.save()
@@ -34,9 +34,9 @@ exports.updateUser = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
     try {
-        if(req.user._id != req.params.id) {
-            return next({status:403, message:'Invalid User ID!'})
-        }
+        // if(req.user._id != req.params.id) {
+        //     return next({status:403, message:'Invalid User ID!'})
+        // }
         await req.user.remove()
         res.send(req.user)
     } catch(e) {
