@@ -1,12 +1,15 @@
 {
-  "name": "task-manager-new",
+  "name": "project-manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "An app to manage projects",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watch --runInBand --setupFiles ./tests/setup.js",
     "start": "node src/index.js",
     "dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./config/dev.env"
+  },
+  "jest":{
+    "testEnvironment": "node"
   },
   "author": "Jatin",
   "license": "ISC",
@@ -22,6 +25,8 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "nodemon": "^2.0.3"
+    "jest": "^26.1.0",
+    "nodemon": "^2.0.3",
+    "supertest": "^4.0.2"
   }
 }
