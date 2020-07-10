@@ -44,6 +44,33 @@ test('Should not login nonexistent user', async () => {
     }).expect(400)
 })
 
+test('should not login if user is already logged in', async () => {
+    const response = await request(app)
+        .post('/api/auth/login').send({
+            email: userOne.email,
+            password: userOne.password
+        })
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .expect(200)
+    const user = await User.findById(userOneId)
+    expect(user.tokens.length).toEqual(1)
+})
+
+test('should not signup if user is already logged in', async () => {
+    const response = await request(app)
+        .post('/api/auth/signup').send({
+            name: 'Andrew',
+            email: 'andrew@example.com',
+            username: 'andrew',
+            password: 'MyPass777!'
+        })
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .expect(200)
+    const user = await User.findById(userOneId)
+    expect(user.tokens.length).toEqual(1)
+})
+
+
 test('Should get profile for user', async () => {
     await request(app)
         .get('/api/users/me')

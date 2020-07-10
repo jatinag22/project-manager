@@ -1,4 +1,4 @@
-errorUtil = (err, req, res, next) => {
+error = (err, req, res, next) => {
     res.status(err.status || 500)
     .send({
         error:{
@@ -7,4 +7,4 @@ errorUtil = (err, req, res, next) => {
     })
 }
 
-module.exports = errorUtil
+module.exports = error

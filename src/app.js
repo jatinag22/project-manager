@@ -1,6 +1,6 @@
 const express = require('express')
 const indexRouter = require('./routes')
-const errorUtil = require('./utils/errorUtil')
+const error = require('./middleware/error')
 
 const app = express()
 app.use(express.json())
@@ -8,11 +8,11 @@ app.use(express.json())
 app.use('/api', indexRouter)
 
 app.use((req, res, next) => {
-    let error = new Error('Not Found!')
-    error.status = 404
-    next(error)
+    let err = new Error('Not Found!')
+    err.status = 404
+    next(err)
 })
 
-app.use(errorUtil)
+app.use(error)
 
 module.exports = app

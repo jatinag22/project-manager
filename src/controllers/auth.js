@@ -2,7 +2,7 @@ const User = require('../models/user')
 
 exports.login = async (req, res, next) => {
     if(req.user) {
-        return res.send({user, token})
+        return res.send({user: req.user, token: req.token})
     }
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -16,7 +16,7 @@ exports.login = async (req, res, next) => {
 
 exports.signup = async (req, res, next) => {
     if(req.user) {
-        return res.send({user, token})
+        return res.send({user: req.user, token: req.token})
     }
     const user = new User(req.body)
     try {
