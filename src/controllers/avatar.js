@@ -17,11 +17,6 @@ exports.upload = multer({
 
 exports.uploadAvatar = async (req, res, next) => {
     try {
-        // if(req.user._id != req.params.id) {
-        //     let e = new Error('Invalid User ID!')
-        //     e.status = 400
-        //     throw e
-        // }
         const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer()
         req.user.avatar = buffer
         await req.user.save()
@@ -33,14 +28,8 @@ exports.uploadAvatar = async (req, res, next) => {
 
 exports.getAvatar = async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.id)
-        if(!user) {
-            let e = new Error('User not found!')
-            e.status = 404
-            throw e
-        }
         res.set('Content-Type', 'image/png')
-        res.send(user.avatar)
+        res.send(req.user.avatar)
     } catch (e) {
         next(e)
     }

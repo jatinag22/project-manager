@@ -2,7 +2,7 @@ const Project = require('../models/project')
 
 exports.viewMembers = async (req, res, next) => {
     try {
-        const project = await project.findOne({_id: req.params.id, members: req.user.id})
+        const project = await Project.findOne({_id: req.params.id, members: req.user._id})
         if(!project) {
             return next({status: 404, message: 'Project not found!'})
         }
